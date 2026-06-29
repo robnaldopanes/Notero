@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a">
+  <title>Nexaa · Editor de noticias</title>
+  <link rel="stylesheet" href="/static/style.css?v=11">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">N</span>
+      <div>
+        <h1>Nexaa</h1>
+        <p class="tagline">Editor automático · Región de Ñuble</p>
+      </div>
+    </div>
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <span id="version-badge" class="ghost" style="font-size: 11px; padding: 3px 8px; display: none;">v?.?</span>
+      <button id="status-btn" class="ghost" type="button" title="Estado del sistema" style="display: none;">estado</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Buscador de fuentes locales integrado -->
+    <section class="card">
+      <h2>🔍 Buscar Noticias</h2>
+      <p class="muted" style="margin-bottom: 12px;">Busca noticias recientes de las últimas 24 horas de ámbito regional, nacional o internacional.</p>
+      
+      <div class="search-scope-bar">
+        <button type="button" class="scope-btn active" data-scope="local">Regional (Ñuble)</button>
+        <button type="button" class="scope-btn" data-scope="national">Nacional (Chile)</button>
+        <button type="button" class="scope-btn" data-scope="international">Internacional</button>
+      </div>
+      <small class="muted" id="search-scope-hint" style="margin-top: -8px; display: block; margin-bottom: 10px;">
+        Buscará solo en medios de la Región de Ñuble + feeds regionales.
+      </small>
+
+      <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
+        <input type="text" id="search-input" placeholder="Ej: bomberos San Carlos, corte de luz..." style="flex: 1; min-width: 200px; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--fg);">
+        <button type="button" id="search-btn" class="primary" style="padding: 8px 16px;">Buscar</button>
+      </div>
+
+      <span id="search-spinner" class="spinner" style="margin-bottom: 10px;" hidden>buscando…</span>
+      <div id="search-results" class="search-results-list" style="display: flex; flex-direction: column; gap: 10px; max-height: 350px; overflow-y: auto;"></div>
+    </section>
+
+    <section class="card">
+      <h2>Generar noticia</h2>
+
+      <form id="form" autocomplete="off" novalidate>
+        <div class="tab-bar" role="tablist">
+          <button type="button" class="tab tab-active" data-mode="url" role="tab" aria-selected="true">
+            <span class="tab-emoji">🔗</span> Pegar URL
+          </button>
+          <button type="button" class="tab" data-mode="text" role="tab" aria-selected="false">
+            <span class="tab-emoji">📝</span> Pegar texto
+          </button>
+        </div>
+
+        <div id="panel-url" class="panel">
+          <label class="field">
+            <span>URL del artículo</span>
+            <input name="source_url" id="source_url" type="text" inputmode="url"
+                   placeholder="https://www.ladiscusion.cl/..." autocomplete="off">
+            <small class="muted">Pegá la URL completa. La IA reescribe el artículo con tus palabras y atribuye al medio original.</small>
+          </label>
+        </div>
+
+        <div id="panel-text" class="panel" hidden>
+          <label class="field">
+            <span>Texto de la noticia</span>
+            <textarea name="source_text" id="source_text" rows="10"
+                      placeholder="Pegá acá el texto: puede ser un resumen, una idea, un tip, un WhatsApp, una nota de prensa, lo que tengas. La IA lo reescribe en formato Nexaa y agrega contexto cuando hace falta."></textarea>
+            <small class="muted">Mientras más contexto mejor: qué pasó, dónde, cuándo, quién. La IA hace el resto.</small>
+          </label>
+        </div>
+
+        <label class="field" style="margin-top: 14px;">
+          <span>Formato de salida</span>
+          <select name="format" id="format">
+            <option value="nexaa_social_v1">Nexaa social (con Facebook) — recomendado</option>
+            <option value="nexaa_v1">Nexaa clásico (7 secciones)</option>
+          </select>
+        </label>
+
+        <div class="actions" style="margin-top: 14px;">
+          <button type="submit" id="submit" class="primary">Generar noticia</button>
+          <span id="spinner" class="spinner" hidden>generando…</span>
+        </div>
+      </form>
+    </section>
+
+    <section class="card" id="output" hidden>
+      <h2>Resultado</h2>
+      <div class="meta" id="meta"></div>
+      <div class="alerts" id="alerts"></div>
+      <div id="output-image-container" style="margin-bottom: 14px; border-radius: 8px; overflow: hidden; display: none; border: 1px solid var(--border);">
+        <img id="output-image" src="" alt="Imagen destacada" style="width: 100%; height: auto; display: block; max-height: 320px; object-fit: cover;">
+      </div>
+      <div id="image-link-card" class="section-card" style="display: none; margin-bottom: 14px;">
+        <div class="section-header">
+          <span class="section-title">🔗 Link de la imagen</span>
+          <button type="button" id="copy-image-link-btn" class="copy-btn ghost">Copiar</button>
+        </div>
+        <div id="image-link-body" class="section-body" style="word-break: break-all; font-family: monospace; font-size: 13px;"></div>
+      </div>
+      <div class="notice" id="no-keys-notice" hidden></div>
+      <div class="section-list" id="section-list"></div>
+      <div class="actions" style="margin-top: 14px;">
+        <button type="button" id="copy-all" class="primary">Copiar todo</button>
+        <button type="button" id="copy-html" class="ghost">Copiar como HTML</button>
+        <span id="copy-status" class="muted"></span>
+      </div>
+      <details>
+        <summary>Detalles de calidad</summary>
+        <div id="quality"></div>
+      </details>
+
+      <div class="refine-panel">
+        <h3>Refinar con la IA (como un chat)</h3>
+        <p class="muted">Escribí una instrucción y la IA modifica solo lo que pediste. El resto queda igual.</p>
+        <div class="quick-prompts">
+          <button type="button" class="chip" data-prompt="Haz el titular más directo y concreto">Titular más directo</button>
+          <button type="button" class="chip" data-prompt="Reescribe el contenido con un tono más cercano al lector">Tono más cercano</button>
+          <button type="button" class="chip" data-prompt="Acorta la noticia a la mitad, manteniendo lo esencial">Acortar noticia</button>
+          <button type="button" class="chip" data-prompt="Mejora el post de Facebook: gancho más fuerte y mejor pregunta">Mejorar Facebook</button>
+          <button type="button" class="chip" data-prompt="Agrega contexto sobre la Región de Ñuble y por qué importa a la comunidad local">Agregar contexto Ñuble</button>
+        </div>
+        <textarea id="refine-input" rows="2" placeholder="Ej: haz el titular más directo y agrega una cifra de impacto"></textarea>
+        <div class="actions">
+          <button type="button" id="refine-btn" class="primary">Refinar</button>
+          <span id="refine-spinner" class="spinner" hidden>refinando…</span>
+          <span id="refine-status" class="muted"></span>
+        </div>
+        <div id="chat-log" class="chat-log"></div>
+      </div>
+    </section>
+
+    <section class="card error-card" id="error" hidden>
+      <h2>⚠ No se pudo generar</h2>
+      <p id="error-msg"></p>
+      <div id="error-extra" style="margin-top: 8px;"></div>
+      <details>
+        <summary>Qué significa esto</summary>
+        <ul class="muted" style="margin: 6px 0 0 0; padding-left: 20px; font-size: 13px;">
+          <li><b>URL no accesible</b>: el sitio rechazó la conexión (404, 5xx, timeout, DNS).</li>
+          <li><b>robots.txt bloquea</b>: el sitio prohíbe el scraping para nuestro bot.</li>
+          <li><b>Sitio JS pesado</b>: la página no devuelve el artículo en HTML, solo JS (no podemos ejecutarlo).</li>
+          <li><b>Rate limit</b>: el proveedor de IA llegó a su límite. Esperá unos segundos.</li>
+          <li><b>No hay API key</b>: revisá <code>.env</code> y reiniciá el servidor.</li>
+        </ul>
+      </details>
+      <div class="actions" style="margin-top: 10px;">
+        <button type="button" id="copy-error" class="ghost">Copiar detalles del error</button>
+      </div>
+    </section>
+
+
+  </main>
+
+  <footer>
+    <p class="muted">Nexaa · Editor automático de noticias · Región de Ñuble</p>
+  </footer>
+
+  <!-- Loader overlay animado -->
+  <div class="loader-overlay" id="loader-overlay" role="status" aria-live="polite">
+    <div class="loader-box">
+      <div class="loader-icon" id="loader-icon">✍️</div>
+      <p class="loader-title" id="loader-title">Generando noticia…</p>
+      <p class="loader-phase" id="loader-phase">Iniciando…</p>
+      <div class="loader-progress-wrap">
+        <div class="loader-progress-bar" id="loader-bar"></div>
+      </div>
+      <div class="loader-dots">
+        <div class="loader-dot"></div>
+        <div class="loader-dot"></div>
+        <div class="loader-dot"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js?v=11"></script>
+</body>
+</html>

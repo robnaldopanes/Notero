@@ -1,0 +1,10 @@
+{
+  "name": "nexaa-editor",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "python -m nexaa.cli serve --host 127.0.0.1 --port 8005",
+    "kill-server": "python scratch/kill_port.py",
+    "test": "python -m pytest tests/ -v",
+    "clean-tests": "del /q tests\\test_ddg* tests\\test_google_rss* tests\\test_resolve.py"
+  }
+}

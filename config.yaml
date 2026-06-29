@@ -1,0 +1,94 @@
+ia_order:
+  - openai
+  - groq
+  - together
+  - mistral
+  - gemini
+  - claude
+
+fallback_enabled: true
+max_retries: 2
+editorial_style: nexaa_v1
+
+region: "Región de Ñuble, Chile"
+default_language: "es-CL"
+
+timeouts:
+  primary_seconds: 10
+  fallback_seconds: 18
+  global_budget_seconds: 80
+
+circuit_breaker:
+  failure_threshold: 3
+  cooldown_seconds: 90
+
+providers:
+  openai:
+    model: "gpt-4o-mini"
+    max_tokens: 2400
+    temperature: 0.2
+  groq:
+    model: "llama-3.3-70b-versatile"
+    max_tokens: 2400
+    temperature: 0.2
+  together:
+    model: "meta-llama/Llama-3.3-70B-Instruct-Turbo"
+    max_tokens: 2400
+    temperature: 0.2
+  mistral:
+    model: "mistral-small-latest"
+    max_tokens: 2400
+    temperature: 0.2
+  gemini:
+    model: "gemini-2.0-flash"
+    max_tokens: 2400
+    temperature: 0.2
+  claude:
+    model: "claude-3-5-haiku-latest"
+    max_tokens: 2400
+    temperature: 0.2
+
+quality:
+  min_desarrollo_chars: 700
+  max_desarrollo_chars: 2200
+  min_desarrollo_words: 120
+  max_desarrollo_words: 320
+  required_sections:
+    - "Categoría"
+    - "Ciudad/Región"
+    - "Titular"
+    - "Desarrollo"
+    - "Contexto"
+    - "Impacto"
+    - "Cierre"
+  forbidden_words:
+    - "increíble"
+    - "no te lo creerás"
+    - "shockeante"
+    - "se viraliza"
+    - "lo que nadie te contó"
+    - "te volará la cabeza"
+    - "bestial"
+    - "brutal"
+
+scraper:
+  timeout_seconds: 15
+  cache_ttl_hours: 6
+  respect_robots: true
+  user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+
+web_search:
+  timeout_seconds: 10
+  cache_ttl_hours: 12
+  results_per_query: 3
+  country: "cl"
+
+paths:
+  facts_dir: "data/facts"
+  pending_dir: "data/pending"
+  published_dir: "data/published"
+  rejected_dir: "data/rejected"
+  logs_dir: "data/logs"
+  scraper_cache_dir: "data/scraper_cache"
+  search_cache_dir: "data/search_cache"
+  search_cache_dir_brave: "data/search_cache_brave"

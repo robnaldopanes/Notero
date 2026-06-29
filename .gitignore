@@ -1,0 +1,15 @@
+.env
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.venv/
+venv/
+data/logs/*
+data/pending/*
+data/published/*
+data/rejected/*
+!data/pending/.gitkeep
+!data/published/.gitkeep
+!data/rejected/.gitkeep
+!data/logs/.gitkeep
