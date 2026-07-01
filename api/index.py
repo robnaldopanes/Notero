@@ -819,7 +819,15 @@ async def _fetch_rss_from_sources(scope: str = "local") -> list[dict]:
 
     unique.sort(key=lambda x: x.get("_pub_ts", 0), reverse=True)
     for r in unique:
-        r.pop("_pub_ts", None)
+        ts = r.pop("_pub_ts", 0)
+        if ts:
+            diff = now.timestamp() - ts
+            if diff < 3600:
+                r["pub_ago"] = f"hace {int(diff / 60)} min"
+            elif diff < 86400:
+                r["pub_ago"] = f"hace {int(diff / 3600)} h"
+            else:
+                r["pub_ago"] = f"hace {int(diff / 86400)} días"
 
     return unique[:20]
 

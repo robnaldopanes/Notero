@@ -606,6 +606,7 @@ async function performSearch() {
       <div class="search-result-item">
         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px;">
           <span class="tag" style="font-size: 10px; padding: 2px 6px; border: 1px solid var(--border); border-radius: 4px; color: var(--accent); background: rgba(56, 189, 248, 0.05); font-weight: 600;">${item.source || 'Fuente'}</span>
+          ${item.pub_ago ? `<span style="font-size: 11px; color: var(--muted);">· ${item.pub_ago}</span>` : ''}
         </div>
         <h4 style="margin-top: 2px;">${item.title}</h4>
         <p>${item.snippet || '(sin descripción)'}</p>
