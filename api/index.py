@@ -6,6 +6,7 @@ Inlined CSS/JS para que funcione sin archivos estáticos externos.
 import sys
 import os
 import re
+import base64
 from pathlib import Path
 from datetime import datetime
 from typing import Any
@@ -19,13 +20,61 @@ try:
 except ImportError:
     pass
 
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
 from pydantic import BaseModel, Field
 
 import yaml
 
 app = FastAPI(title="Nexaa AI Editor", version="0.1.0")
+
+
+@app.middleware("http")
+async def auth_middleware(request: Request, call_next):
+    """HTTP Basic Auth — protege el editor con usuario/contraseña.
+
+    Configurar en Vercel:
+      NEXAA_USER=nexaa        (opcional, default: nexaa)
+      NEXAA_PASSWORD=tupassword  (si no se setea, no pide auth)
+    """
+    path = request.url.path
+    # Rutas públicas (no requieren auth)
+    public_paths = ("/healthz", "/manifest.json", "/service-worker.js")
+    if path in public_paths:
+        return await call_next(request)
+
+    password = os.getenv("NEXAA_PASSWORD", "")
+    if not password:
+        return await call_next(request)
+
+    auth_header = request.headers.get("authorization", "")
+    if not auth_header.startswith("Basic "):
+        return PlainTextResponse(
+            "No autorizado",
+            status_code=401,
+            headers={"WWW-Authenticate": 'Basic realm="Nexaa Editor"'},
+        )
+
+    try:
+        decoded = base64.b64decode(auth_header[6:]).decode("utf-8")
+        user, pwd = decoded.split(":", 1)
+    except Exception:
+        return PlainTextResponse(
+            "No autorizado",
+            status_code=401,
+            headers={"WWW-Authenticate": 'Basic realm="Nexaa Editor"'},
+        )
+
+    expected_user = os.getenv("NEXAA_USER", "nexaa")
+    if user != expected_user or pwd != password:
+        return PlainTextResponse(
+            "Credenciales incorrectas",
+            status_code=401,
+            headers={"WWW-Authenticate": 'Basic realm="Nexaa Editor"'},
+        )
+
+    return await call_next(request)
+
 
 templates_dir = project_root / "nexaa" / "web" / "templates"
 static_dir = project_root / "nexaa" / "web" / "static"
