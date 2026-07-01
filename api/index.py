@@ -239,7 +239,11 @@ async def api_trending(scope: str = "local"):
                 ("La Discusión",   "https://www.ladiscusion.cl/feed/"),
                 ("La Fontana",     "https://lafontana.cl/feed/"),
                 ("Ñuble Digital",  "https://nubledigital.cl/feed/"),
-                ("BioBio Chile (Ñuble)", "https://www.biobiochile.cl/tag/nuble/feed/"),
+                ("Radio Contacto", "https://radiocontacto.cl/feed/"),
+                ("GORE Ñuble",     "https://www.goredenuble.cl/feed/"),
+                ("Muni Cobquecura","https://www.municipalidadcobquecura.cl/feed/"),
+                ("Muni San Carlos","https://www.munisancarlos.cl/feed/"),
+                ("Muni Quirihue",  "https://www.muniquirihue.cl/feed/"),
             ]
         elif scope == "international":
             sources = [
@@ -705,7 +709,19 @@ async def _fetch_rss_from_sources(scope: str = "local") -> list[dict]:
         ("La Discusión",   "https://www.ladiscusion.cl/feed/"),
         ("La Fontana",     "https://lafontana.cl/feed/"),
         ("Ñuble Digital",  "https://nubledigital.cl/feed/"),
+        ("Radio Contacto", "https://radiocontacto.cl/feed/"),
         ("Google News Ñuble", "https://news.google.com/rss/search?q=%C3%91uble+Chile&hl=es-419&gl=CL&ceid=CL:es-419"),
+        # Municipalidades
+        ("Muni Cobquecura", "https://www.municipalidadcobquecura.cl/feed/"),
+        ("Muni Coelemu",    "https://www.municoelemu.cl/feed/"),
+        ("Muni Coihueco",   "https://www.coihueco.cl/feed/"),
+        ("Muni Florida",    "https://www.muniflorida.cl/feed/"),
+        ("Muni Pemuco",     "https://www.pemuco.cl/feed/"),
+        ("Muni Quirihue",   "https://www.muniquirihue.cl/feed/"),
+        ("Muni San Carlos", "https://www.munisancarlos.cl/feed/"),
+        ("Muni San Ignacio","https://www.sanignacio.cl/feed/"),
+        # GORE
+        ("GORE Ñuble",      "https://www.goredenuble.cl/feed/"),
     ]
 
     # Google News RSS (devuelve URLs de artículos, no portadas)
