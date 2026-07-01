@@ -261,7 +261,7 @@ async def api_trending(scope: str = "local"):
             ]
 
         now = datetime.now(timezone.utc)
-        cutoff = now - timedelta(hours=48)
+        cutoff = now - timedelta(hours=24)
 
         # Stopwords para ignorar en la extracción de keywords
         stop = {"de", "la", "el", "en", "del", "las", "los", "un", "una", "y", "a", "con",
